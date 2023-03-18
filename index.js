@@ -23,7 +23,7 @@ let ret;
 
 // This function runs if the http://localhost:5000/getData endpoint
 // is requested with a GET request
-app.get('/:code', async (req, res) => {
+app.get('/auth/:code', async (req, res) => {
 	code = req.params.code;
 	console.log("🔥 code :", code);
 	const client_id = "863yjvgqsfyyvq";
@@ -61,6 +61,28 @@ app.get('/:code', async (req, res) => {
 app.listen(PORT, () => {
 	console.log(`✅ Example app listening at http://localhost:${PORT}`);
 });
+
+(async () => {
+	console.log("🔥 ")
+	const LinkedInProfileScraper = require('linkedin-profile-scraper');
+	try {
+		console.log("🔥 1")
+		const scraper = new LinkedInProfileScraper({
+			sessionCookieValue: 'AQEDATAaQ2wDpztcAAABhvPWu-UAAAGHF-M_5VYAKesdGgcSy5M22jnoghU9VjeavsOezoPsG7EAiTScfAPeHVPMjTkRyk0Aiu4YpWunWRurN0DIOgfMMhGQmhxufG09P4WiClLwQfcb4tOjQ6I4ZhL6'
+		});
+		console.log("🔥 2")
+		await scraper.setup()
+		console.log("🔥 3")
+		const result = await scraper.run('https://www.linkedin.com/in/curious-mohammed-abdullah/')
+		console.log("🔥 4")
+		console.log("result", result)
+	} catch (err) {
+		if (err.name === 'SessionExpired') {
+			// Do something when the scraper notifies you it's not logged-in anymore
+			console.log("err", err);
+		}
+	}
+})()
 
 
 

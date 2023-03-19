@@ -58,31 +58,52 @@ app.get('/auth/:code', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-	console.log(`✅ Example app listening at http://localhost:${PORT}`);
-});
+// app.listen(PORT, () => {
+// 	console.log(`✅ Example app listening at http://localhost:${PORT}`);
+// });
 
-(async () => {
-	console.log("🔥 ")
-	const LinkedInProfileScraper = require('linkedin-profile-scraper');
-	try {
-		console.log("🔥 1")
-		const scraper = new LinkedInProfileScraper({
-			sessionCookieValue: 'AQEDATAaQ2wDpztcAAABhvPWu-UAAAGHF-M_5VYAKesdGgcSy5M22jnoghU9VjeavsOezoPsG7EAiTScfAPeHVPMjTkRyk0Aiu4YpWunWRurN0DIOgfMMhGQmhxufG09P4WiClLwQfcb4tOjQ6I4ZhL6'
-		});
-		console.log("🔥 2")
-		await scraper.setup()
-		console.log("🔥 3")
-		const result = await scraper.run('https://www.linkedin.com/in/curious-mohammed-abdullah/')
-		console.log("🔥 4")
-		console.log("result", result)
-	} catch (err) {
-		if (err.name === 'SessionExpired') {
-			// Do something when the scraper notifies you it's not logged-in anymore
-			console.log("err", err);
-		}
-	}
-})()
+// (async () => {
+// 	console.log("🔥 ")
+// 	const LinkedInProfileScraper = require('linkedin-profile-scraper');
+// 	try {
+// 		console.log("🔥 1")
+// 		const scraper = new LinkedInProfileScraper({
+// 			sessionCookieValue: 'AQEDATAaQ2wDpztcAAABhvPWu-UAAAGHF-M_5VYAKesdGgcSy5M22jnoghU9VjeavsOezoPsG7EAiTScfAPeHVPMjTkRyk0Aiu4YpWunWRurN0DIOgfMMhGQmhxufG09P4WiClLwQfcb4tOjQ6I4ZhL6'
+// 		});
+// 		console.log("🔥 2")
+// 		await scraper.setup()
+// 		console.log("🔥 3")
+// 		const result = await scraper.run('https://www.linkedin.com/in/curious-mohammed-abdullah/')
+// 		console.log("🔥 4")
+// 		console.log("result", result)
+// 	} catch (err) {
+// 		if (err.name === 'SessionExpired') {
+// 			// Do something when the scraper notifies you it's not logged-in anymore
+// 			console.log("err", err);
+// 		}
+// 	}
+// })()
+
+const puppeteer = require('puppeteer');
+const fs = require('node:fs')
+async function start() {
+	const browser = await puppeteer.launch();
+	const page = await browser.newPage();
+	await page.goto('https://github.com/mohammed1916/portfolio');
+	// const data = await page.evaluate(() => {
+	// 	const read = document.getElementById('readme');
+	// 	// const htmlText = read.map(el => el.innerHTML);
+	// 	console.log("read :", read);
+	// 	return read;
+	// });
+	const data = page.$eval('#readme', el => el.innerHTML);
+	await browser.close();
+	console.log("data: ", data);
+
+	data.then((data) => fs.writeFile('data.html', data, (err) => console.log(err)));
+
+};
+start()
 
 
 

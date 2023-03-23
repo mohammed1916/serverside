@@ -59,9 +59,15 @@ app.listen(PORT, () => {
 const puppeteer = require('puppeteer');
 const fs = require('node:fs')
 async function start() {
+	const linkedinURL = 'https://www.linkedin.com/in/curious-mohammed-abdullah/';
+	const certURL = linkedinURL + "details/certifications/";
+	const skillsURL = linkedinURL + "details/skills/";
+	let urls = [
+		linkedinURL,
+		certURL,
+		skillsURL
+	]
 	try {
-
-
 		const browser = await puppeteer.launch(
 			{
 				executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -71,149 +77,107 @@ async function start() {
 				defaultViewport: null
 			}
 		);
-		// 
-		const linkedinURL = 'https://www.linkedin.com/in/curious-mohammed-abdullah/'
 		const page = await browser.newPage();
-		// page.setDefaultNavigationTimeout(5000);
-		// await page.goto(linkedinURL);
-		// await Promise.all([
-		// 	// await page.waitForNavigation(),
-		// 	await page.waitForSelector(".text-heading-xlarge.inline.t-24.v-align-middle.break-words"),
-		// 	await page.waitForNetworkIdle()
-		// 	// 	await page.waitForSelector("#top-card-text-details-contact-info"),
-		// 	// 	await page.waitForSelector("a[id$=certifications]"),
-		// ]
-		// );
+		for (let i = 0; i < urls.length; i++) {
+			await page.goto(linkedinURL);
+			await Promise.all([
+				await page.waitForNavigation({ waitUntil: 'networkidle2' }),
+				await page.waitForSelector(".text-heading-xlarge.inline.t-24.v-align-middle.break-words")
+			]
+			);
+			const data = await page.evaluate(() => {
+				return JSON.stringify({
+					information: {
+						name: document.querySelectorAll(".text-heading-xlarge.inline.t-24.v-align-middle.break-words")[0].getAttribute('textContent'),
+						domain: document.querySelectorAll(".text-body-medium.break-words")[0].getAttribute('innerText'),
+						image: document.querySelectorAll(".ember-view.profile-photo-edit__preview")[0].getAttribute('src'),
+						// email: email,
+						description: document.querySelectorAll(".inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width")[0].getAttribute('innerText'),
+						profiles: [
+							{
+								"media": "Linkedin",
+								// "url": "",
+								"icon": "./img/icons/media/linkedin.png"
+							},
+						]
+					},
+					education: {
+						"Institution":
+							document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).textContent,
+						"Type":
+							document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).textContent,
+						"Year of Passing":
+							document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).textContent,
+						"Grade":
+							document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .pvs-list__outer-container .pvs-list .display-flex.mv1.link-without-hover-visited .display-flex .display-flex.full-width .pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`).textContent,
+						"website":
+							"",
+					},
+					/** Number of exp : document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column`) */
+					/**	Titles: Array.from(document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul li div div div div .mr1.t-bold > .visually-hidde
+					 * 
+					 */
+					work: {
+						"title": document.querySelector(`#${document.getElementById('experience').parentNode.id} div ul li div div div div div span .visually-hidden`).textContent,
+						"dates": document.querySelector(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`).innerText,
+						"location": document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`)[1].textContent,
+						"thumbnail": document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .ivm-view-attr__img-wrapper.ivm-view-attr__img-wrapper--use-img-tag.display-flex > img`)[0].src,
+						description: document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`)[0].textContent
 
-		// // const bodyHandle = await page.$('anchor anchorWithStickyNavbar_LWe7');
-		// /** Goto contact info for email */
-		// await page.click("#top-card-text-details-contact-info")
-		// await page.waitForNavigation();
-		// const email = await page.evaluate(() => {
-		// 	// return Array.from(document.querySelectorAll("h2.anchor anchorWithStickyNavbar_LWe7")).map(x => x.textContent)
-		// 	return document.querySelectorAll(".pv-contact-info__contact-link.link-without-visited-state.t-14")[1].innerText;
-		// });
-		// fs.writeFile('email.html', email, (e) => console.log("e", e))
-		// await page.goBack();
-		// const selector = await page.evaluate(() => {
-		// 	return document.querySelector("#navigation-add-edit-deeplink-add-licenses-and-certifications")
-		// 	return document.querySelector("a[id$=certifications]")
-		// })
-		// const certificateButton = await page.$('a[id$=certifications]')
-		// certificateButton.click()
-		// await page.click("#navigation-add-edit-deeplink-add-licenses-and-certifications")
+					},
+					// "skills": {
+					// 	"Knowledge in Main Concepts": skills
+					// },
+					// "certifications": certificates
+				});
+			});
+			console.log("data1: ", data);
+			fs.writeFile('data.json', data, (e) => console.log("e", e))
 
-		// const cert = await page.evaluate(() => {
-		// 	return document.querySelector(`#${document.getElementById('licenses_and_certifications').parentNode.id}  div div div a`).href;
-		// })
+			await page.goto(certURL)
+			await Promise.all([
+				await page.waitForNavigation({ waitUntil: 'networkidle2' }),
+				await page.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
+			])
+			const certificates = await page.evaluate(() => {
+				var titles = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > a > div > span > .visually-hidden")).map((e) => e.textContent);
+				const cred = Array.from(document.querySelectorAll("section div div div ul li .pv2 a")).map((e) => e.href)
+				var subData = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > a > span > .visually-hidden")).map((e) => e.textContent)
+				let woCredname = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > div > div > span > .visually-hidden")).map((e) => e.textContent);
+				let woCred = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > div > span > .visually-hidden")).map((e) => e.textContent);
+				titles = titles.concat(woCredname)
+				subData = subData.concat(woCred)
+				return JSON.stringify(Array.from(titles).map((e, i) => {
+					return {
+						"title": e,
+						"date": subData[3 * i + 1],
+						"Institution": subData[3 * i],
+						"thumbnail": cred[i],
+						"description": ""
+					}
+				}));
+			});
+			console.log("certificates: ", certificates)
+			fs.writeFile('certificates.json', certificates, (e) => console.log("cert", e))
 
-		// const cert = await page.evaluate(() => )
-		const cert = linkedinURL + "details/certifications/"
-		await page.goto(cert)
-		await Promise.all([
-			await page.waitForSelector(".t-20.t-bold.ph3.pt3.pb2")
-		])
-		// await page.waitForNetworkIdle()
-		const certificates = await page.evaluate(() => {
-			// return Array.from(document.querySelectorAll("h2.anchor anchorWithStickyNavbar_LWe7")).map(x => x.textContent)
-			var titles = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > a > div > span > .visually-hidden")).map((e) => e.textContent);
-			const cred = Array.from(document.querySelectorAll("section div div div ul li .pv2 a")).map((e) => e.href)
-			var subData = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > a > span > .visually-hidden")).map((e) => e.textContent)
-			let woCredname = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > div > div > span > .visually-hidden")).map((e) => e.textContent);
-			let woCred = Array.from(document.querySelectorAll("div > div div > ul > li > div > div > div > div > div > span > .visually-hidden")).map((e) => e.textContent);
-			titles = titles.concat(woCredname)
-			subData = subData.concat(woCred)
-			return JSON.stringify(Array.from(titles).map((e, i) => {
-				return {
-					"title": e,
-					"date": subData[3 * i + 1],
-					"Institution": subData[3 * i],
-					"thumbnail": cred[i],
-					"description": ""
-				}
-			}));
-		});
-		console.log("certificates: ", certificates)
-		fs.writeFile('certificates.json', certificates, (e) => console.log("cert", e))
-		// await page.goBack();
-		// await page.click(document.querySelector("a[id^=navigation-index-Show-all-]").id)
-		// await page.waitForNavigation();
-		// const skills = await page.evaluate(() => {
-		// 	// return Array.from(document.querySelectorAll("h2.anchor anchorWithStickyNavbar_LWe7")).map(x => x.textContent)
-		// 	const data = new Set(Array.from(document.querySelectorAll("li > div > div > div > div > a > div > span > .visually-hidden")).map((e) => e.textContent))
-		// 	return [...data].join(", ");
-		// });
-		// await page.goBack();
-		/**
-		 * eduSelector = document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center`)
-		 */
-		// await page.goBack();
-		// await page.waitForNetworkIdle()
-		// const data = await page.evaluate(() => {
-		// 	// const data = document.querySelectorAll(".text-body-medium.break-words");
-		// 	// return data[0].innerText;
-		// 	// return Array.from(document.querySelectorAll("h2.anchor anchorWithStickyNavbar_LWe7")).map(x => x.textContent)
-		// 	return JSON.stringify({
-		// 		information: {
-		// 			name: document.querySelectorAll(".text-heading-xlarge.inline.t-24.v-align-middle.break-words")[0].getAttribute('textContent'),
-		// 			domain: document.querySelectorAll(".text-body-medium.break-words")[0].innerText,
-		// 			image: document.querySelectorAll(".ember-view.profile-photo-edit__preview")[0].src,
-		// 			// email: email,
-		// 			description: document.querySelectorAll(".inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width")[0].innerText,
-		// 			profiles: [
-		// 				{
-		// 					"media": "Linkedin",
-		// 					// "url": "",
-		// 					"icon": "./img/icons/media/linkedin.png"
-		// 				},
-		// 			]
-		// 		},
-		// 		education: {
-		// 			"Institution":
-		// 				document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).textContent,
-		// 			"Type":
-		// 				document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).textContent,
-		// 			"Year of Passing":
-		// 				document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).textContent,
-		// 			"Grade":
-		// 				document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .pvs-list__outer-container .pvs-list .display-flex.mv1.link-without-hover-visited .display-flex .display-flex.full-width .pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`).textContent,
-		// 			"website":
-		// 				"",
-		// 		},
-		// 		/** Number of exp : document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column`) */
-		// 		/**	Titles: Array.from(document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul li div div div div .mr1.t-bold > .visually-hidde
-		// 		 * 
-		// 		 */
-		// 		work: {
-		// 			"title": document.querySelector(`#${document.getElementById('experience').parentNode.id} div ul li div div div div div span .visually-hidden`).textContent,
-		// 			"dates": document.querySelector(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`).innerText,
-		// 			"location": document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`)[1].textContent,
-		// 			"thumbnail": document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .ivm-view-attr__img-wrapper.ivm-view-attr__img-wrapper--use-img-tag.display-flex > img`)[0].src,
-		// 			description: document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`)[0].textContent
 
-		// 		},
-		// 		// "skills": {
-		// 		// 	"Knowledge in Main Concepts": skills
-		// 		// },
-		// 		// "certifications": certificates
-		// 	});
-		// });
-		// // data.information.profiles[0].url = linkedinURL;
-		// console.log("data1: ", data);
-		// fs.writeFile('e1.json', data, (e) => console.log("e", e))
-		// // const data = await page.$eval("#example-3", el => el.textContent);
-		// // await bodyHandle.dispose();
-		// // await page.screenshot({
-		// // 	path: "example.png"
-		// // })
-		// // await page.close();
+			await page.goto(skillsURL);
+			await Promise.all([
+				await page.waitForNavigation({ waitUntil: 'networkidle2' }),
+				await page.waitForSelector(".t-20.t-bold.ph3.pt3.pb2")
+			])
+			const skills = await page.evaluate(() => {
+				const data = new Set(Array.from(document.querySelectorAll("li > div > div > div > div > a > div > span > .visually-hidden")).map((e) => e.textContent))
+				return [...data].join(", ");
+			});
+			console.log("skills: ", skills)
+			fs.writeFile('skills.json', skills, (e) => console.log("skills", e))
+			await browser.close();
 
-		await browser.close();
-		console.log("data: ", data);
 
-		// data.then((data) => console.log(data));
-	} catch (err) {
-		console.log("err", err)
-	}
-};
-start()
+			// data.then((data) => console.log(data));
+		} catch (err) {
+			console.log("err", err)
+		}
+	};
+	start()

@@ -1,12 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
-const bodyParser = require('body-parser');
 
 const isHeadlessMode = false;
 const PORT = 8080;
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }))
+// app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(cors());
 const corsOptions = {
@@ -275,7 +274,6 @@ app.get("/skills", (req, res) => {
 		res.send(data);
 		console.log("sent skills", data)
 	});
-	console.log("err: ", err)
 })
 app.get("/certificates", (req, res) => {
 	fs.readFile("data/certificates.json", 'utf-8', (err, data) => {

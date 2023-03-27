@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const bodyParser = require('body-parser');
 
+const isHeadlessMode = false;
 const PORT = 8080;
 const app = express();
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(cors());
 const corsOptions = {
@@ -34,7 +37,6 @@ app.get('/auth/:code', async (req, res) => {
 		const jsonResponse = await response.json();
 		if (jsonResponse["access_token"] !== undefined) {
 			res.send(jsonResponse["access_token"]);
-			start()
 		}
 		else
 			res.send("ERROR");
@@ -58,9 +60,10 @@ app.listen(PORT, () => {
  */
 const puppeteer = require('puppeteer');
 const fs = require('node:fs')
-const linkedinURL = 'https://www.linkedin.com/in/curious-mohammed-abdullah/';
-const certURL = linkedinURL + "details/certifications/";
-const skillsURL = linkedinURL + "details/skills/";
+// const linkedinURL = 'https://www.linkedin.com/in/curious-mohammed-abdullah/';
+// const certURL = linkedinURL + "details/certifications/";
+// const projectsURL = linkedinURL + "details/projects/";
+// const skillsURL = linkedinURL + "details/skills/";
 
 
 class SkillClass {
@@ -74,92 +77,37 @@ class CertClass {
 	}
 }
 class LinkDataClass {
-	constructor() {
-		this.skillsObj;
-		this.certObj;
+	constructor(url) {
+		this.linkedinURL = url;
+		this.certURL = this.linkedinURL + "details/certifications/";
+		this.projectsURL = this.linkedinURL + "details/projects/";
+		this.skillsURL = this.linkedinURL + "details/skills/";
+		this.start = this.start.bind(this);
+		this.linkedinData = this.linkedinData.bind(this);
 	}
 	async start() {
-		try {
-			// for (let i = 0; i < urls.length; i++) {
-			// 	if (i == 0) {
-			// 		await linkedinData();
-			// 	} else if (i == 1) {
-			// 		await certData();
-			// 	} else if (i == 2) {
-			// 		await skillsData();
-			// 	}
-			// }
-			await Promise.all([
-				await this.skillsData(),
-				await this.certData(),
-				await this.linkedinData()
-			])
-
-			console.log("close")
-			// data.then((data) => console.log(data));
-		} catch (err) {
-			console.log("err", err)
-		}
+		await Promise.all([
+			await this.skillsData(),
+			await this.certData(),
+			await this.projData(),
+			await this.linkedinData()
+		])
+		console.log("close")
 	}
 	async linkedinData() {
-		const browser = await puppeteer.launch(
-			{
-				executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-				userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
-				// headless: false,
-				timeout: 0,
-				defaultViewport: null
-			}
-		);
+		const browser = await launchBrowser(isHeadlessMode);
 		const page = await browser.newPage();
-		console.log("linkedinURL", linkedinURL)
+		console.log("linkedinURL", this.linkedinURL)
 		await Promise.all([
-			await page.goto(linkedinURL),
+			await page.goto(this.linkedinURL),
 			await page.waitForSelector(".text-heading-xlarge.inline.t-24.v-align-middle.break-words"),
 			await page.waitForNetworkIdle()
 		]
 		);
-		await fs.readFile("data/certificates.json", (err, data) => {
-			console.log("read...");
-			this.certObj = data;
-		});
-		await fs.readFile("data/skills.json", (err, data) => {
-			console.log("read...");
-			this.skillsObj = data;
-		});
-		const data = await page.evaluate(() => {
+		const work = await page.evaluate(() => {
 			return JSON.stringify({
-				information: {
-					name: document.querySelectorAll(".text-heading-xlarge.inline.t-24.v-align-middle.break-words")[0].getAttribute('textContent'),
-					domain: document.querySelectorAll(".text-body-medium.break-words")[0].getAttribute('innerText'),
-					image: document.querySelectorAll(".ember-view.profile-photo-edit__preview")[0].getAttribute('src'),
-					// email: email,
-					description: document.querySelectorAll(".inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width")[0].getAttribute('innerText'),
-					profiles: [
-						{
-							"media": "Linkedin",
-							// "url": "",
-							"icon": "./img/icons/media/linkedin.png"
-						},
-					]
-				},
-				education: {
-					"Institution":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).textContent,
-					"Type":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).textContent,
-					"Year of Passing":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).textContent,
-					"Grade":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .pvs-list__outer-container .pvs-list .display-flex.mv1.link-without-hover-visited .display-flex .display-flex.full-width .pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`).textContent,
-					"website":
-						"",
-				},
-				/** Number of exp : document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column`) */
-				/**	Titles: Array.from(document.querySelectorAll(`#${document.getElementById('experience').parentNode.id} div ul li div div div div .mr1.t-bold > .visually-hidde
-				 * 
-				 */
-				work: {
+				"work": [{
+					"company": document.querySelector(`#${document.getElementById('experience').parentNode.id}  div ul li div div div div .t-14.t-normal .visually-hidden`).innerText,
 					"title": document.querySelector(`#${document.getElementById('experience').parentNode.id} div ul li div div div div div span .visually-hidden`).textContent,
 					"dates": document.querySelector(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`).innerText,
 					"location": document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .t-14.t-normal.t-black--light .visually-hidden`)[1].textContent,
@@ -167,32 +115,65 @@ class LinkDataClass {
 					description: document.querySelectorAll(`#${document.getElementById('experience').parentNode.id}  .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`)[0].textContent
 
 				},
-				// "skills": {
-				// 	"Knowledge in Main Concepts": `${this.skillsObj}`
-				// },
-				// "certifications": `${this.certObj}`
-			});
+				],
+			})
+		})
+		const education = await page.evaluate(() => {
+			return JSON.stringify({
+				"education": [{
+					"Institution":
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).textContent,
+					"Program":
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).textContent,
+					"YearOfPassing":
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).textContent,
+					"Grade":
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .pvs-list__outer-container .pvs-list .display-flex.mv1.link-without-hover-visited .display-flex .display-flex.full-width .pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`).textContent,
+					"website":
+						"",
+				},
+				],
+			})
+		})
+		const data = await page.evaluate(() => {
+			const DATA = {
+				"information": {
+					"name": document.querySelectorAll(".text-heading-xlarge.inline.t-24.v-align-middle.break-words")[0].innerText,
+					"domain": document.querySelectorAll(".text-body-medium.break-words")[0].innerText,
+					"image": document.querySelectorAll(".ember-view.profile-photo-edit__preview")[0].getAttribute('src'),
+					// email: email,
+					"description": document.querySelectorAll(".inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width")[0].innerText,
+					"profiles": [
+						{
+							"media": "Linkedin",
+							"url": "",
+							"icon": "./img/icons/media/linkedin.png"
+						},
+					],
+				}
+			}
+			return DATA;
+		}).then((DATA) => {
+			DATA.information.profiles[0].url = this.linkedinURL;
+			return JSON.stringify(DATA)
 		});
-
-		console.log("data1: ", data);
-		fs.writeFile('data/data.json', data, () => console.log("data write... "))
+		var DATA = Promise.resolve(data)
+		DATA.then(() => {
+			console.log("data1: ", data);
+			fs.writeFile('data/data.json', data, () => console.log("data write... "))
+			fs.writeFile('data/education.json', education, () => console.log("data write... "))
+			fs.writeFile('data/work.json', work, () => console.log("data write... "))
+		})
 		await browser.close()
+
 	}
 	async skillsData() {
-		const browserSkill = await puppeteer.launch(
-			{
-				executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-				userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
-				// headless: false,
-				timeout: 0,
-				defaultViewport: null
-			}
-		);
+		const browserSkill = await launchBrowser(isHeadlessMode);
 		const pageSkill = await browserSkill.newPage();
 
-		console.log("skillsURL", skillsURL)
+		console.log("this.skillsURL", this.skillsURL)
 		await Promise.all([
-			await pageSkill.goto(skillsURL),
+			await pageSkill.goto(this.skillsURL),
 			await pageSkill.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
 			await pageSkill.waitForNetworkIdle()
 		])
@@ -202,23 +183,24 @@ class LinkDataClass {
 		});
 		this.skillsObj = new SkillClass(skills);
 		console.log("skills: ", skills)
-		fs.writeFile('data/skills.json', JSON.stringify(skills), () => console.log("skills write.. "))
+		fs.writeFile('data/skills.json', `{
+			"skills": [
+				{
+					"type": "",
+					"KnowledgeInAdvanceTopics": "",
+					"KnowledgeInMainConcepts": ${JSON.stringify(skills)},
+            "Beginner": ""
+        }
+    ]
+}`, () => console.log("skills write.. "))
 		await browserSkill.close();
 	}
 	async certData() {
-		const browserCert = await puppeteer.launch(
-			{
-				executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-				userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
-				// headless: false,
-				timeout: 0,
-				defaultViewport: null
-			}
-		);
+		const browserCert = await launchBrowser(isHeadlessMode);
 		const pageCert = await browserCert.newPage();
-		console.log("certURL", certURL)
+		console.log("certURL", this.certURL)
 		await Promise.all([
-			await pageCert.goto(certURL),
+			await pageCert.goto(this.certURL),
 			await pageCert.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
 			await pageCert.waitForNetworkIdle()
 		])
@@ -234,7 +216,7 @@ class LinkDataClass {
 				return {
 					"title": e,
 					"date": subData[3 * i + 1],
-					"Institution": subData[3 * i],
+					"institution": subData[3 * i],
 					"thumbnail": cred[i],
 					"description": ""
 				}
@@ -242,48 +224,91 @@ class LinkDataClass {
 		});
 		this.certObj = new CertClass(certificates);
 		console.log("certificates: ", certificates)
-		fs.writeFile('data/certificates.json', certificates, () => console.log("certificate write.. "))
+		fs.writeFile('data/certificates.json', `{\"certificates"\: ${certificates}}`, () => console.log("certificate write.. "))
 		await browserCert.close()
 	}
+	async projData() {
+		const browserProj = await launchBrowser(isHeadlessMode);
+		const pageProj = await browserProj.newPage();
+		console.log("this.projectsURL", this.projectsURL)
+		await Promise.all([
+			await pageProj.goto(this.projectsURL),
+			await pageProj.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
+			await pageProj.waitForNetworkIdle()
+		])
+		const projects = await pageProj.evaluate(() => {
+			var titles = Array.from(document.querySelectorAll(`main section div div div ul li div div div div div div span .visually-hidden`)).map((e) => e.innerText);
+			let gitlink = Array.from(document.querySelectorAll(`ul li div div div div ul li a`)).map((e) => e.href);
+			let description = Array.from(document.querySelectorAll(`li div div div div ul li div ul li div div div .visually-hidden`)).map((e) => e.innerText);
+			return JSON.stringify(Array.from(titles).map((e, i) => {
+				return {
+					"title": e,
+					"type": "",
+					"thumbnail": gitlink[i],
+					"link": "",
+					"gitlink": gitlink[i],
+					"description": description[i]
+				}
+			}));
+		});
+		this.certObj = new CertClass(projects);
+		console.log("projects: ", projects)
+		fs.writeFile('data/projects.json', `{\"projects"\: ${projects}}`, () => console.log("certificate write.. "))
+		await browserProj.close()
+	}
+}
+
+async function launchBrowser(isHeadless) {
+	return puppeteer.launch(
+		{
+			executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
+			headless: isHeadless,
+			timeout: 0,
+			defaultViewport: { height: 600, width: 500 }
+		}
+	);
 }
 app.get("/skills", (req, res) => {
-	try {
-		const skills = fs.readFile("data/skills.json", 'utf-8', (err, data) => {
-			console.log("read... Skills", data);
-			res.send(data);
-			console.log("sent skills", data)
-
-			// skills = data;
-		});
-		// skills.then(skills => res.send(JSON.stringify(skills)));
-		// res.send(skills);
-	} catch (err) {
-		console.log("err: ", err)
-	}
+	fs.readFile("data/skills.json", 'utf-8', (err, data) => {
+		console.log("read... Skills", data);
+		res.send(data);
+		console.log("sent skills", data)
+	});
+	console.log("err: ", err)
 })
 app.get("/certificates", (req, res) => {
-	try {
-		const certificates = fs.readFile("data/certificates.json", 'utf-8', (err, data) => {
-			console.log("read... Certificates");
-			res.send(data);
-			console.log("sent certificates", data)
-		});
-		// certificates.then(certificates => res.send(JSON.stringify(certificates)));
-	} catch (err) {
-		console.log("err: ", err)
-	}
+	fs.readFile("data/certificates.json", 'utf-8', (err, data) => {
+		console.log("read... Certificates");
+		res.send(data);
+		console.log("sent certificates", data)
+	});
 })
 app.get("/data", (req, res) => {
-	try {
-		const Data = fs.readFile("data/data.json", 'utf-8', (err, data) => {
-			console.log("read... Data");
-			res.send(data);
-			console.log("sent Data", data)
-		});
-		// Data.then(Data => res.send(JSON.stringify(Data)));
-		// res.send(JSON.stringify(Data));
-	} catch (err) {
-		console.log("err: ", err)
-	}
+	fs.readFile("data/data.json", 'utf-8', (err, data) => {
+		res.send(data);
+	});
 })
-// new LinkDataClass().start()
+app.get("/work", (req, res) => {
+	fs.readFile("data/work.json", 'utf-8', (err, data) => {
+		res.send(data);
+	});
+})
+app.get("/education", (req, res) => {
+	fs.readFile("data/education.json", 'utf-8', (err, data) => {
+		res.send(data);
+	});
+})
+app.get("/projects", (req, res) => {
+	fs.readFile("data/projects.json", 'utf-8', (err, data) => {
+		res.send(data);
+	});
+})
+app.get("/getLinkedInData/:url", (req, res) => {
+	let data = "https://www.linkedin.com/in/" + req.params.url + "/"
+	console.log("getLinkedInData ", data)
+	const l = new LinkDataClass(data);
+	l.start();
+
+});
+

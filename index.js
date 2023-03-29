@@ -354,13 +354,14 @@ app.get("/getLinkedInData/:url", (req, res) => {
  */
 
 // (async () => {
-// 	const users = await fs.promises.opendir('\data');
-// 	for await (const user of users) {
-// 		if (user.isDirectory()) {
-// 			console.log("user: ", user.name);
-// 			let data = "https://www.linkedin.com/in/" + user.name + "/"
-// 			const l = new LinkDataClass(data, user.name);
-// 			l.start();
+// 		const users = await fs.promises.opendir('\data');
+// 		for await (const user of users) {
+// 			if (user.isDirectory()) {
+// 				console.log("user: ", user.name);
+// 	/**  console.log(new Date()); */
+// 				let data = "https://www.linkedin.com/in/" + user.name + "/"
+// 				const l = new LinkDataClass(data, user.name);
+// 				l.start();
+// 			}
 // 		}
-// 	}
 // })();

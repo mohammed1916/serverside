@@ -196,7 +196,7 @@ class LinkDataClass {
 		console.log("this.skillsURL", this.skillsURL)
 		await Promise.all([
 			await pageSkill.goto(this.skillsURL),
-			await pageSkill.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
+			await pageSkill.waitForSelector(".t-20.t-bold.ph3.pt3.pb2", { timeout: 0 }),
 			await pageSkill.waitForNetworkIdle(),
 		])
 		const skills = await pageSkill.evaluate(() => {
@@ -285,8 +285,10 @@ class LinkDataClass {
 async function launchBrowser(isHeadless) {
 	return puppeteer.launch(
 		{
-			executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-			userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
+			// executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+			// userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
+			userDataDir: "C:\\Users\\arrah\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 6",
 			headless: isHeadless,
 			timeout: 0,
 			defaultViewport: { height: 600, width: 600 }

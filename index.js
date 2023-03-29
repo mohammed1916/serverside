@@ -51,7 +51,7 @@ app.get('/auth/:code', async (req, res) => {
 
 
 app.listen(PORT, () => {
-	console.log(`✅ Example app listening at http://localhost:${PORT}`);
+	console.log(`✅ Server app listening at http://localhost:${PORT}`);
 });
 
 /**
@@ -76,7 +76,8 @@ class CertClass {
 	}
 }
 class LinkDataClass {
-	constructor(url) {
+	constructor(url, folder) {
+		this.folder = folder;
 		this.linkedinURL = url;
 		this.certURL = this.linkedinURL + "details/certifications/";
 		this.projectsURL = this.linkedinURL + "details/projects/";
@@ -182,9 +183,10 @@ class LinkDataClass {
 		var DATA = Promise.resolve(data)
 		DATA.then(() => {
 			console.log("data1: ", data);
-			fs.writeFile('data/data.json', data, () => console.log("data write... "))
-			fs.writeFile('data/education.json', education, () => console.log("data write... "))
-			fs.writeFile('data/work.json', work, () => console.log("data write... "))
+			console.log("data1 Path: ", `data/${this.linkedinURL}/data.json`);
+			fs.writeFile(`data/${this.folder}/data.json`, data, () => console.log("data write... data"))
+			fs.writeFile(`data/${this.folder}/education.json`, education, () => console.log("data write... education"))
+			fs.writeFile(`data/${this.folder}/work.json`, work, () => console.log("data write... work"))
 		})
 		await browser.close()
 
@@ -205,7 +207,7 @@ class LinkDataClass {
 		});
 		this.skillsObj = new SkillClass(skills);
 		console.log("skills: ", skills)
-		fs.writeFile('data/skills.json', `{
+		fs.writeFile(`data/${this.folder}/skills.json`, `{
 			"skills": [
 				{
 					"type": "",
@@ -246,7 +248,7 @@ class LinkDataClass {
 		});
 		this.certObj = new CertClass(certificates);
 		console.log("certificates: ", certificates)
-		fs.writeFile('data/certificates.json', `{\"certificates"\: ${certificates}}`, () => console.log("certificate write.. "))
+		fs.writeFile(`data/${this.folder}/certificates.json`, `{\"certificates"\: ${certificates}}`, () => console.log("certificate write.. "))
 		await browserCert.close()
 	}
 	async projData() {
@@ -277,7 +279,7 @@ class LinkDataClass {
 		});
 		this.certObj = new CertClass(projects);
 		console.log("projects: ", projects)
-		fs.writeFile('data/projects.json', `{\"projects"\: ${projects}}`, () => console.log("certificate write.. "))
+		fs.writeFile(`data/${this.folder}/projects.json`, `{\"projects"\: ${projects}}`, () => console.log("projects write.. "))
 		await browserProj.close()
 	}
 }
@@ -295,45 +297,70 @@ async function launchBrowser(isHeadless) {
 		}
 	);
 }
-app.get("/skills", (req, res) => {
-	fs.readFile("data/skills.json", 'utf-8', (err, data) => {
+app.get("/skills/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/skills.json`, 'utf-8', (err, data) => {
 		console.log("read... Skills", data);
 		res.send(data);
 		console.log("sent skills", data)
 	});
 })
-app.get("/certificates", (req, res) => {
-	fs.readFile("data/certificates.json", 'utf-8', (err, data) => {
+app.get("/certificates/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/certificates.json`, 'utf-8', (err, data) => {
 		console.log("read... Certificates");
 		res.send(data);
 		console.log("sent certificates", data)
 	});
 })
-app.get("/data", (req, res) => {
-	fs.readFile("data/data.json", 'utf-8', (err, data) => {
+app.get("/data/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/data.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
-app.get("/work", (req, res) => {
-	fs.readFile("data/work.json", 'utf-8', (err, data) => {
+app.get("/work/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/work.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
-app.get("/education", (req, res) => {
-	fs.readFile("data/education.json", 'utf-8', (err, data) => {
+app.get("/education/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/education.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
-app.get("/projects", (req, res) => {
-	fs.readFile("data/projects.json", 'utf-8', (err, data) => {
+app.get("/projects/:path", (req, res) => {
+	fs.readFile(`data/${req.path}/projects.json`, 'ut${req.path}/f-8', (err, data) => {
 		res.send(data);
 	});
 })
 app.get("/getLinkedInData/:url", (req, res) => {
 	let data = "https://www.linkedin.com/in/" + req.params.url + "/"
 	console.log("getLinkedInData ", data)
-	const l = new LinkDataClass(data);
+	const dir = `data/${req.params.url}`;
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir)
+	}
+	const l = new LinkDataClass(data, req.params.url);
 	l.start();
 
 });
 
+
+/**
+ * Run with cron
+*/
+//pm2 start index.js --cron "*/15 * * * *"
+//pm2 delete all
+/**
+ *
+ */
+
+// (async () => {
+// 	const users = await fs.promises.opendir('\data');
+// 	for await (const user of users) {
+// 		if (user.isDirectory()) {
+// 			console.log("user: ", user.name);
+// 			let data = "https://www.linkedin.com/in/" + user.name + "/"
+// 			const l = new LinkDataClass(data, user.name);
+// 			l.start();
+// 		}
+// 	}
+// })();

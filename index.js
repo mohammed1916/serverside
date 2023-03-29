@@ -82,17 +82,34 @@ class LinkDataClass {
 		this.projectsURL = this.linkedinURL + "details/projects/";
 		this.skillsURL = this.linkedinURL + "details/skills/";
 		this.start = this.start.bind(this);
-		this.linkedinData = this.linkedinData.bind(this);
+		// this.linkedinData = this.linkedinData.bind(this);
 	}
 	async start() {
 		await Promise.all([
+			// await this.login(),
 			await this.skillsData(),
 			await this.certData(),
 			await this.projData(),
-			await this.linkedinData()
+			await this.linkedinData(),
 		])
 		console.log("close")
 	}
+	// async login() {
+	// 	const browser = await launchBrowser(isHeadlessMode);
+	// 	const page = await browser.newPage();
+	// 	console.log("linkedinURL", this.linkedinURL)
+	// 	await Promise.all([
+	// 		await page.goto("https://www.linkedin.com/authwall", { waitUntil: 'load', timeout: 0 }),
+	// 		// await page.setDefaultNavigationTimeout(60000);
+	// 		// await page.waitForSelector(".authwall-join-form__title"),
+	// 		// await page.waitForSelector("body div"),
+	// 		await page.waitForNetworkIdle()
+	// 	]
+	// 	);
+
+	// 	await browser.close()
+
+	// }
 	async linkedinData() {
 		const browser = await launchBrowser(isHeadlessMode);
 		const page = await browser.newPage();
@@ -100,7 +117,9 @@ class LinkDataClass {
 		await Promise.all([
 			await page.goto(this.linkedinURL),
 			await page.waitForSelector(".text-heading-xlarge.inline.t-24.v-align-middle.break-words"),
-			await page.waitForNetworkIdle()
+			await page.waitForSelector(".display-flex.flex-wrap.align-items-center.full-height"),
+			// await page.waitForSelector("body div"),
+			await page.waitForNetworkIdle(),
 		]
 		);
 		const work = await page.evaluate(() => {
@@ -121,13 +140,13 @@ class LinkDataClass {
 			return JSON.stringify({
 				"education": [{
 					"Institution":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).textContent,
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .display-flex.flex-wrap.align-items-center.full-height .mr1.hoverable-link-text.t-bold .visually-hidden`).innerText,
 					"Program":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).textContent,
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`).innerText,
 					"YearOfPassing":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).textContent,
+						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .display-flex.flex-row.justify-space-between .optional-action-target-wrapper.display-flex.flex-column.full-width .t-14.t-normal.t-black--light .visually-hidden`).innerText,
 					"Grade":
-						document.querySelector(`#${document.getElementById("education").parentElement.id} .pvs-list__outer-container .pvs-list .artdeco-list__item.pvs-list__item--line-separated.pvs-list__item--one-column .pvs-entity.pvs-entity--padded.pvs-list__item--no-padding-in-columns .display-flex.flex-column.full-width.align-self-center .pvs-list__outer-container .pvs-list .display-flex.mv1.link-without-hover-visited .display-flex .display-flex.full-width .pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center .inline-show-more-text.inline-show-more-text--is-collapsed.inline-show-more-text--is-collapsed-with-line-clamp.full-width .visually-hidden`).textContent,
+						document.querySelector(`#${document.getElementById("education").parentElement.id} div ul li div div div div div div .visually-hidden`).innerText,
 					"website":
 						"",
 				},
@@ -156,6 +175,10 @@ class LinkDataClass {
 			DATA.information.profiles[0].url = this.linkedinURL;
 			return JSON.stringify(DATA)
 		});
+		Promise.all([
+			work,
+			education,
+		])
 		var DATA = Promise.resolve(data)
 		DATA.then(() => {
 			console.log("data1: ", data);
@@ -174,7 +197,7 @@ class LinkDataClass {
 		await Promise.all([
 			await pageSkill.goto(this.skillsURL),
 			await pageSkill.waitForSelector(".t-20.t-bold.ph3.pt3.pb2"),
-			await pageSkill.waitForNetworkIdle()
+			await pageSkill.waitForNetworkIdle(),
 		])
 		const skills = await pageSkill.evaluate(() => {
 			const data = new Set(Array.from(document.querySelectorAll("li > div > div > div > div > a > div > span > .visually-hidden")).map((skillsData) => skillsData.textContent))
@@ -237,13 +260,15 @@ class LinkDataClass {
 		])
 		const projects = await pageProj.evaluate(() => {
 			var titles = Array.from(document.querySelectorAll(`main section div div div ul li div div div div div div span .visually-hidden`)).map((e) => e.innerText);
+			var dates = Array.from(document.querySelectorAll(`main section div div div ul li div div div div .display-flex.flex-column.full-width .t-14.t-normal .visually-hidden`)).map((e) => e.innerText);
 			let gitlink = Array.from(document.querySelectorAll(`ul li div div div div ul li a`)).map((e) => e.href);
 			let description = Array.from(document.querySelectorAll(`li div div div div ul li div ul li div div div .visually-hidden`)).map((e) => e.innerText);
 			return JSON.stringify(Array.from(titles).map((e, i) => {
 				return {
 					"title": e,
+					"dates": dates[i],
 					"type": "",
-					"thumbnail": gitlink[i],
+					"thumbnail": "",
 					"link": "",
 					"gitlink": gitlink[i],
 					"description": description[i]
@@ -264,7 +289,7 @@ async function launchBrowser(isHeadless) {
 			userDataDir: "/Users/mohammedabdullah/Library/Application Support/Google/Chrome/Profile 4",
 			headless: isHeadless,
 			timeout: 0,
-			defaultViewport: { height: 600, width: 500 }
+			defaultViewport: { height: 600, width: 600 }
 		}
 	);
 }

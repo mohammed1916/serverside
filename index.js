@@ -83,6 +83,7 @@ class LinkDataClass {
 		this.projectsURL = this.linkedinURL + "details/projects/";
 		this.skillsURL = this.linkedinURL + "details/skills/";
 		this.start = this.start.bind(this);
+		this.signIn = this.signIn.bind(this);
 		// this.linkedinData = this.linkedinData.bind(this);
 	}
 	async start() {
@@ -95,22 +96,30 @@ class LinkDataClass {
 		])
 		console.log("close")
 	}
-	// async login() {
-	// 	const browser = await launchBrowser(isHeadlessMode);
-	// 	const page = await browser.newPage();
-	// 	console.log("linkedinURL", this.linkedinURL)
-	// 	await Promise.all([
-	// 		await page.goto("https://www.linkedin.com/authwall", { waitUntil: 'load', timeout: 0 }),
-	// 		// await page.setDefaultNavigationTimeout(60000);
-	// 		// await page.waitForSelector(".authwall-join-form__title"),
-	// 		// await page.waitForSelector("body div"),
-	// 		await page.waitForNetworkIdle()
-	// 	]
-	// 	);
+	async signIn() {
+		await Promise.all([
+			await this.login(),
+			// await this.linkedinData(),
+		])
+		console.log("close")
+	}
+	async login() {
+		console.log("login")
+		const browser = await launchBrowser(false);
+		const page = await browser.newPage();
+		console.log("linkedinURL", this.linkedinURL)
+		await Promise.all([
+			await page.goto("https://www.linkedin.com/login", { waitUntil: 'load', timeout: 0 }),
+			// await page.setDefaultNavigationTimeout(60000);
+			await page.waitForSelector(".authwall-join-form__title", { waitUntil: 'load', timeout: 0 }),
+			// await page.waitForSelector("body div"),
+			// await page.waitForNetworkIdle()
+		]
+		);
 
-	// 	await browser.close()
+		await browser.close()
 
-	// }
+	}
 	async linkedinData() {
 		const browser = await launchBrowser(isHeadlessMode);
 		const page = await browser.newPage();
@@ -340,6 +349,17 @@ app.get("/getLinkedInData/:url", (req, res) => {
 	}
 	const l = new LinkDataClass(data, req.params.url);
 	l.start();
+
+});
+app.get("/signInLinkedIn/:url", (req, res) => {
+	let data = "https://www.linkedin.com/in/" + req.params.url + "/"
+	console.log("getLinkedInData ", data)
+	const dir = `data/${req.params.url}`;
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir)
+	}
+	const l = new LinkDataClass(data, req.params.url);
+	l.signIn();
 
 });
 

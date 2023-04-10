@@ -307,36 +307,36 @@ async function launchBrowser(isHeadless) {
 	);
 }
 app.get("/skills/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/skills.json`, 'utf-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/skills.json`, 'utf-8', (err, data) => {
 		console.log("read... Skills", data);
 		res.send(data);
 		console.log("sent skills", data)
 	});
 })
 app.get("/certificates/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/certificates.json`, 'utf-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/certificates.json`, 'utf-8', (err, data) => {
 		console.log("read... Certificates");
 		res.send(data);
 		console.log("sent certificates", data)
 	});
 })
 app.get("/data/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/data.json`, 'utf-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/data.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
 app.get("/work/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/work.json`, 'utf-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/work.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
 app.get("/education/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/education.json`, 'utf-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/education.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
 app.get("/projects/:path", (req, res) => {
-	fs.readFile(`data/${req.path}/projects.json`, 'ut${req.path}/f-8', (err, data) => {
+	fs.readFile(`data/${req.params.path}/projects.json`, 'utf-8', (err, data) => {
 		res.send(data);
 	});
 })
